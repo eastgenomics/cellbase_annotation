@@ -7,18 +7,6 @@ import urllib.request, json
 
 from host import host_address
 
-
-## 14/09/21
-def flip_exonNumber(transcript_table):
-    # print("Negative strand! Flipping exons.")
-    exonNumber = list(transcript_table.exonNumber)
-    transcript_table2 = transcript_table.drop(columns=['exonNumber'])
-    exonNumber.reverse()
-    en = pd.DataFrame({"exonNumber" : exonNumber})
-    transcript_table2 = pd.concat([transcript_table2, en], axis = 1)
-    return(transcript_table2)
-
-
 def query_cellbasedict(exon_dict):
     txs_dict = {}
     txs_dict['chr'] = exon_dict["chromosome"]
@@ -27,7 +15,6 @@ def query_cellbasedict(exon_dict):
     txs_dict['gene_symbol'] = data['responses'][0]['results'][0]['name']
     txs_dict['transcript_id'] = data['responses'][0]['results'][0]['id'] #cannot take from exon as it has the _exonnumber attached to the transcript
     txs_dict['exonNumber'] = exon_dict["exonNumber"]
-    #print(txs_dict)
     return txs_dict
 
 # dataframe that contains all transcripts
