@@ -49,6 +49,7 @@ for row in range(len(chrX_regions)):
         var_ref = []
         var_alt = []
         var_qual = ["."] * annot_length
+        var_filter = ["PASS"] * annot_length
         var_study = []
         var_population = []
         var_AF = []
@@ -61,28 +62,43 @@ for row in range(len(chrX_regions)):
             var_alt.append(annot_study["altAllele"])
             var_AF.append(annot_study["altAlleleFreq"])
         #change into dataframe columns
-        var_chr = pd.DataFrame({'chr': var_chr})
-        var_pos = pd.DataFrame({'pos': var_pos})
+        var_chr = pd.DataFrame({'#CHROM': var_chr})
+        var_pos = pd.DataFrame({'POS': var_pos})
         var_ID = pd.DataFrame({'ID': var_ID})
-        var_ref = pd.DataFrame({'ref': var_ref})
-        var_alt = pd.DataFrame({'alt': var_alt})
-        var_qual = pd.DataFrame({'qual': var_qual})
+        var_ref = pd.DataFrame({'REF': var_ref})
+        var_alt = pd.DataFrame({'ALT': var_alt})
+        var_qual = pd.DataFrame({'QUAL': var_qual})
+        var_filter = pd.DataFrame({'FILTER': var_filter})
         var_study = pd.DataFrame({'study': var_study})
         var_population = pd.DataFrame({'population': var_population})
-        var_AF = pd.DataFrame({'AF': var_AF})
+        var_AF = pd.DataFrame({'INFO': var_AF})
         #append all the annotations of that one variant
-        dataframe = pd.concat([var_chr, var_pos,var_ref,var_alt,var_qual,var_study,var_population,var_AF], axis=1)
+        dataframe = pd.concat([var_chr, var_pos, var_ID, var_ref,var_alt,var_qual,var_filter, var_study,var_population,var_AF], axis=1)
         #append annotations to the other/main variants table
         variant_dataframe = variant_dataframe.append(dataframe)
         
 
+
+variant_dataframe['INFO'] = 'AF=' + variant_dataframe['INFO']
+variant_dataframe['#CHROM'] = 'chr' + variant_dataframe['#CHROM'].astype(str)
 variant_dataframe.to_csv("~/Documents/Projects/SexCheck/testing_data/myeloid/probes_myeloid_variant_popfreq.bed", sep="\t", index=False)
 
+variant_dataframe #5,135
 
+# filter for gnomad and get the population to be all
+variant_dataframe_gnomad = variant_dataframe.query("study == 'GNOMAD_GENOMES'") #4,686
+variant_dataframe_gnomad_ALL = variant_dataframe_gnomad.query("population == 'ALL'") #605
+variant_dataframe_gnomad_ALL = variant_dataframe_gnomad_ALL.drop(['study', 'population'], axis=1) 
+variant_dataframe_gnomad_ALL['INFO'] = 'AF=' + variant_dataframe_gnomad_ALL['INFO'].astype(str)
+variant_dataframe_gnomad_ALL.to_csv("~/Documents/Projects/SexCheck/testing_data/myeloid/probes_myeloid_variant_gnomdALL.bed",
+                                    sep="\t", index=False, )
 
-
-
-
+# get any study but population=ALL
+variant_dataframe_ALL = variant_dataframe.query("population == 'ALL'") 
+variant_dataframe_ALL = variant_dataframe_ALL.drop(['study', 'population'], axis=1) 
+variant_dataframe_ALL['INFO'] = 'AF=' + variant_dataframe_ALL['INFO'].astype(str)
+variant_dataframe_ALL.to_csv("~/Documents/Projects/SexCheck/testing_data/myeloid/probes_myeloid_variant_ALL.bed",
+                                    sep="\t", index=False, )
 
 #via pycellbase
 # variant_client does not mirror what is available on pycellbase :( 
