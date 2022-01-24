@@ -4,9 +4,6 @@ import pandas as pd
 from pycellbase.cbconfig import ConfigClient
 from pycellbase.cbclient import CellBaseClient
 
-# host contains the address for cellbase host
-from host import host_address
-
 
 def parse_args():
     """Reads on argument passed at the cmd line
@@ -80,7 +77,7 @@ def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
         try:
             data = gc.get_info(ensembl_id)
         except:
-            print("Unable to get gene info from cellbase")
+            print(f"Unable to get {ensembl_id} info from cellbase cleint")
 
         # some ensembl gene id not present in cellbase so skip these
         if not data['responses'][0]['results']:
@@ -116,7 +113,7 @@ def main():
     through the query_cellbase function and save all outuputs.
     """
     # Query cellbase5 database
-    custom_config = {'rest': {'hosts': [host_address]},
+    custom_config = {'rest': {'hosts': ['https://ws.zettagenomics.com/cellbase']},
                         'version': 'v5', 'species': 'hsapiens'}
     customconfigclient = ConfigClient(custom_config)
     cbc = CellBaseClient(customconfigclient)
