@@ -6,6 +6,7 @@ from pycellbase.cbclient import CellBaseClient
 import sys
 import time
 
+
 def parse_args():
     """Reads on argument passed at the cmd line
     Returns:
@@ -26,8 +27,8 @@ def parse_args():
 
 
 def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
-                    ensemblID_not_in_cellbase,
-                    ensemblID_has_no_maneselect_refseq, all_genes):
+                  ensemblID_not_in_cellbase,
+                  ensemblID_has_no_maneselect_refseq, all_genes):
     """This function queries cellbase for a given gene from the HGNC
     table. As there is not get HGNC ID function for cellbase, the
     ensembl gene id will be queried instead. The output is the equivalent
@@ -123,8 +124,10 @@ def main():
     sys.stdout = open(today_datetime + "_output_log.txt", "w")
 
     # Query cellbase5 database
-    custom_config = {'rest': {'hosts': ['https://ws.zettagenomics.com/cellbase']},
-                        'version': 'v5', 'species': 'hsapiens'}
+    custom_config = {'rest': {'hosts': [
+                                'https://ws.zettagenomics.com/cellbase'
+                                ]},
+                    'version': 'v5', 'species': 'hsapiens'}
     customconfigclient = ConfigClient(custom_config)
     cbc = CellBaseClient(customconfigclient)
     cbc.show_configuration()['version']
@@ -133,7 +136,7 @@ def main():
     # read in the input file hgnc tsv from the cmd line
     args = parse_args()
     print(
-        "================      Input files     ================\n" , \
+        "================      Input files     ================\n",
         f"HGNC table input file => {args.file}"
         )
     HGNC_df = pd.read_csv(args.file, sep='\t')
@@ -146,13 +149,14 @@ def main():
 
     # input the lists and get out the filled out lists
     all_genes, HGNC_missing_ensemblID, ensemblID_not_in_cellbase, \
-        ensemblID_has_no_maneselect_refseq = query_cellbase(
+    ensemblID_has_no_maneselect_refseq = query_cellbase(
         gc, HGNC_df, HGNC_missing_ensemblID, ensemblID_not_in_cellbase,
         ensemblID_has_no_maneselect_refseq, all_genes)
 
     # Save all hgnc ids and relevent refseq mane transcripts to dataframe
     df = pd.DataFrame.from_dict(all_genes)
-    # some of df contains genes with no manerefseq ID, they have NaNs so remove it
+    # some of df contains genes with no manerefseq ID,
+    # they have NaNs so remove it
     df_noNaN = df[pd.notnull(df['MANE_RefSeqID'])]
     # rest index to allow merging of columns later
     df_noNaN = df_noNaN.reset_index(drop=True)
@@ -170,11 +174,11 @@ def main():
     df.to_csv(df_outputname, sep="\t", header=False, index=False)
 
     print(
-        "Table with HGNC IDs with mane_select refseq transcript " , \
+        "Table with HGNC IDs with mane_select refseq transcript ",
         f"=> {df_noNaN_outputname}"
             )
     print(
-        "Table with all HGNC IDs with and without mane_select " , \
+        "Table with all HGNC IDs with and without mane_select ",
         f"refseq transcript => {df_outputname}"
             )
 
@@ -192,8 +196,8 @@ def main():
     # merge dataframe and column
     missinginfo_df = pd.concat(
         [HGNC_missing_ensemblID, ensemblID_not_in_cellbase,
-         ensemblID_has_no_maneselect_refseq],
-         axis=1
+        ensemblID_has_no_maneselect_refseq],
+        axis=1
         )
 
     missinginfo_df_outputname = today_datetime + '_g2t_b38_missing_info.tsv'
@@ -201,8 +205,8 @@ def main():
                             sep="\t", header=True, index=False)
 
     print(
-        "Table with HGNC IDs missing ensembl gene IDs " , \
-          "ensembl gene IDs not in cellbase and " , \
+        "Table with HGNC IDs missing ensembl gene IDs ",
+          "ensembl gene IDs not in cellbase and ",
          f"=> {missinginfo_df_outputname}\n"
             )
 
