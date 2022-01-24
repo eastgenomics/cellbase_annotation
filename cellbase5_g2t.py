@@ -1,9 +1,10 @@
 import argparse
-from datetime import date
+import datetime
 import pandas as pd
 from pycellbase.cbconfig import ConfigClient
 from pycellbase.cbclient import CellBaseClient
-
+import sys
+import time
 
 def parse_args():
     """Reads on argument passed at the cmd line
@@ -112,6 +113,15 @@ def main():
     Main function to set up cellbase version 5, put the HGNC dataframe
     through the query_cellbase function and save all outuputs.
     """
+    # time taken for script to run
+    begin_time = datetime.datetime.now()
+
+    # print all outputs to an output job file
+    # named tuple contains local time
+    named_tuple = time.localtime()
+    today_datetime = time.strftime("%Y%m%d_%H%M%S", named_tuple)
+    sys.stdout = open(today_datetime + "_output_log.txt", "w")
+
     # Query cellbase5 database
     custom_config = {'rest': {'hosts': ['https://ws.zettagenomics.com/cellbase']},
                         'version': 'v5', 'species': 'hsapiens'}
@@ -120,8 +130,12 @@ def main():
     cbc.show_configuration()['version']
     gc = cbc.get_gene_client()  # select gene clients
 
-    # read in the hgnc tsv from the cmd line
+    # read in the input file hgnc tsv from the cmd line
     args = parse_args()
+    print(
+        "================      Input files     ================\n" , \
+        f"HGNC table input file => {args.file}"
+        )
     HGNC_df = pd.read_csv(args.file, sep='\t')
     all_genes = []
 
@@ -131,7 +145,8 @@ def main():
     ensemblID_has_no_maneselect_refseq = []
 
     # input the lists and get out the filled out lists
-    all_genes, HGNC_missing_ensemblID, ensemblID_not_in_cellbase, ensemblID_has_no_maneselect_refseq = query_cellbase(
+    all_genes, HGNC_missing_ensemblID, ensemblID_not_in_cellbase, \
+        ensemblID_has_no_maneselect_refseq = query_cellbase(
         gc, HGNC_df, HGNC_missing_ensemblID, ensemblID_not_in_cellbase,
         ensemblID_has_no_maneselect_refseq, all_genes)
 
@@ -147,12 +162,21 @@ def main():
     df_noNaN['canonical_list'] = 'canonical'
 
     # save outputs
-    today = date.today().strftime("%Y%m%d")
+    print("================      Output files    ================")
 
-    df_noNaN_outputname = today + '_g2t_b38.tsv'
-    df_outputname = today + '_g2t_b38_all.tsv'
+    df_noNaN_outputname = today_datetime + '_g2t_b38.tsv'
+    df_outputname = today_datetime + '_g2t_b38_all.tsv'
     df_noNaN.to_csv(df_noNaN_outputname, sep="\t", header=False, index=False)
     df.to_csv(df_outputname, sep="\t", header=False, index=False)
+
+    print(
+        "Table with HGNC IDs with mane_select refseq transcript " , \
+        f"=> {df_noNaN_outputname}"
+            )
+    print(
+        "Table with all HGNC IDs with and without mane_select " , \
+        f"refseq transcript => {df_outputname}"
+            )
 
     # save list that wont be in the final file
     # change into dataframe columns
@@ -172,9 +196,17 @@ def main():
          axis=1
         )
 
-    missinginfo_df_outputname = today + '_g2t_b38_missing_info.tsv'
+    missinginfo_df_outputname = today_datetime + '_g2t_b38_missing_info.tsv'
     missinginfo_df.to_csv(missinginfo_df_outputname,
                             sep="\t", header=True, index=False)
+
+    print(
+        "Table with HGNC IDs missing ensembl gene IDs " , \
+          "ensembl gene IDs not in cellbase and " , \
+         f"=> {missinginfo_df_outputname}\n"
+            )
+
+    print(f"Execution time {(datetime.datetime.now() - begin_time)}")
 
 
 if __name__ == "__main__":
