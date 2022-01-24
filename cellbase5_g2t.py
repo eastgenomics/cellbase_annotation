@@ -27,8 +27,8 @@ def parse_args():
 
 
 def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
-                ensemblID_not_in_cellbase,
-                ensemblID_has_no_maneselect_refseq, all_genes):
+                    ensemblID_not_in_cellbase,
+                    ensemblID_has_no_maneselect_refseq, all_genes):
     """This function queries cellbase for a given gene from the HGNC
     table. As there is not get HGNC ID function for cellbase, the
     ensembl gene id will be queried instead. The output is the equivalent
@@ -127,7 +127,7 @@ def main():
     custom_config = {'rest': {'hosts': [
                                 'https://ws.zettagenomics.com/cellbase'
                                 ]},
-                    'version': 'v5', 'species': 'hsapiens'}
+                                'version': 'v5', 'species': 'hsapiens'}
     customconfigclient = ConfigClient(custom_config)
     cbc = CellBaseClient(customconfigclient)
     cbc.show_configuration()['version']
@@ -202,13 +202,13 @@ def main():
 
     missinginfo_df_outputname = today_datetime + '_g2t_b38_missing_info.tsv'
     missinginfo_df.to_csv(missinginfo_df_outputname,
-                            sep="\t", header=True, index=False)
+                        sep="\t", header=True, index=False)
 
     print(
         "Table with HGNC IDs missing ensembl gene IDs ",
-          "ensembl gene IDs not in cellbase and ",
-         f"=> {missinginfo_df_outputname}\n"
-            )
+        "ensembl gene IDs not in cellbase and ",
+        f"=> {missinginfo_df_outputname}\n"
+        )
 
     print(f"Execution time {(datetime.datetime.now() - begin_time)}")
 
