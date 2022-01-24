@@ -28,8 +28,8 @@ def parse_args():
 
 
 def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
-                    ensemblID_not_in_cellbase,
-                    ensemblID_has_no_maneselect_refseq, all_genes):
+                  ensemblID_not_in_cellbase,
+                  ensemblID_has_no_maneselect_refseq, all_genes):
     """This function queries cellbase for a given gene from the HGNC
     table. As there is not get HGNC ID function for cellbase, the
     ensembl gene id will be queried instead. The output is the equivalent
@@ -60,8 +60,10 @@ def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
     """
 
     for row in range(len(HGNC_df)):
-        HGNC_id = HGNC_df.loc[row, 'HGNC ID'] #HGNC ID is in 1st column
-        ensembl_id = HGNC_df.loc[row, 'Ensembl gene ID'] #Ensembl gene ID is in 12th column
+        # HGNC ID is in 1st column
+        HGNC_id = HGNC_df.loc[row, 'HGNC ID']
+        # Ensembl gene ID is in 12th column
+        ensembl_id = HGNC_df.loc[row, 'Ensembl gene ID']
         # some genes do not have ensembl id so skip these
         if pd.isna(ensembl_id):
             print(HGNC_id + " does not have ensembl id to gene")
@@ -100,7 +102,6 @@ def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
             ensemblID_has_no_maneselect_refseq)
 
 
-
 def main():
     """
     Main function to set up cellbase version 5, put the HGNC dataframe
@@ -108,11 +109,11 @@ def main():
     """
     # Query cellbase5 database
     custom_config = {'rest': {'hosts': [host_address]},
-                    'version': 'v5', 'species': 'hsapiens'}
+                    'version': 'v5', 'species': 'hsapiens', 'assembly': 'grch38'}
     customconfigclient = ConfigClient(custom_config)
     cbc = CellBaseClient(customconfigclient)
     cbc.show_configuration()['version']
-    gc = cbc.get_gene_client() #select gene clients
+    gc = cbc.get_gene_client()  # select gene clients
 
     # read in the hgnc tsv from the cmd line
     args = parse_args()
@@ -143,8 +144,8 @@ def main():
     # save outputs
     today = date.today().strftime("%Y%m%d")
 
-    df_noNaN_outputname = today +'_g2t_b38.tsv'
-    df_outputname = today +'_g2t_b38_all.tsv'
+    df_noNaN_outputname = today + '_g2t_b38.tsv'
+    df_outputname = today + '_g2t_b38_all.tsv'
     df_noNaN.to_csv(df_noNaN_outputname, sep="\t", header=False, index=False)
     df.to_csv(df_outputname, sep="\t", header=False, index=False)
 
@@ -160,14 +161,16 @@ def main():
         'ensembl_gene_has_no_maneselect_refseq': ensemblID_has_no_maneselect_refseq
         })
     # merge dataframe and column
-    missinginfo_dataframe = pd.concat(
+    missinginfo_df = pd.concat(
         [HGNC_missing_ensemblID, ensemblID_not_in_cellbase,
-        ensemblID_has_no_maneselect_refseq],
-        axis=1)
+         ensemblID_has_no_maneselect_refseq],
+         axis=1)
 
-    missinginfo_dataframe_outputname = today +'_g2t_b38_missing_info.tsv'
-    missinginfo_dataframe.to_csv(missinginfo_dataframe_outputname, sep="\t", header=True, index=False)
+    missinginfo_df_outputname = today + '_g2t_b38_missing_info.tsv'
+    missinginfo_df.to_csv(missinginfo_df_outputname,
+                                 sep="\t", header=True, index=False)
 
 if __name__ == "__main__":
+
 
     main()
