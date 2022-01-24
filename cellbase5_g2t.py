@@ -27,8 +27,8 @@ def parse_args():
 
 
 def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
-                    ensemblID_not_in_cellbase,
-                    ensemblID_has_no_maneselect_refseq, all_genes):
+                  ensemblID_not_in_cellbase,
+                  ensemblID_has_no_maneselect_refseq, all_genes):
     """This function queries cellbase for a given gene from the HGNC
     table. As there is not get HGNC ID function for cellbase, the
     ensembl gene id will be queried instead. The output is the equivalent
@@ -79,7 +79,7 @@ def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
         try:
             data = gc.get_info(ensembl_id)
         except:
-            print(f"Unable to get {ensembl_id} info from cellbase cleint")
+            print(f"Unable to get {ensembl_id} info from cellbase client")
 
         # some ensembl gene id not present in cellbase so skip these
         if not data['responses'][0]['results']:
@@ -119,15 +119,15 @@ def main():
 
     # print all outputs to an output job file
     # named tuple contains local time
-    named_tuple = time.localtime()
-    today_datetime = time.strftime("%Y%m%d_%H%M%S", named_tuple)
+    local_time = time.localtime()
+    today_datetime = time.strftime("%Y%m%d_%H%M%S", local_time)
     sys.stdout = open(today_datetime + "_output_log.txt", "w")
 
     # Query cellbase5 database
     custom_config = {'rest': {'hosts': [
                                 'https://ws.zettagenomics.com/cellbase'
                                 ]},
-                                'version': 'v5', 'species': 'hsapiens'}
+                            'version': 'v5', 'species': 'hsapiens'}
     customconfigclient = ConfigClient(custom_config)
     cbc = CellBaseClient(customconfigclient)
     cbc.show_configuration()['version']
