@@ -15,7 +15,7 @@ def parse_args():
     """
 
     parser = argparse.ArgumentParser(
-        description='HGNC tsv containg columns HGNC and ensembl gene ID')
+        description='HGNC tsv containing columns HGNC and ensembl gene ID')
     parser.add_argument(
         '-f', '--file',
         required=True,
@@ -64,6 +64,7 @@ def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
         HGNC_id = HGNC_df.loc[row, 'HGNC ID']
         # Ensembl gene ID is in 12th column
         ensembl_id = HGNC_df.loc[row, 'Ensembl gene ID']
+
         # some genes do not have ensembl id so skip these
         if pd.isna(ensembl_id):
             print(HGNC_id + " does not have ensembl id to gene")
@@ -72,8 +73,15 @@ def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
         # make dict to keep info on what refseq is for ensembl gene in cellbase
         gene_dict = {}
         gene_dict['HGNC_ID'] = HGNC_id
+
         # get all info and select transcript info
-        data = gc.get_info(ensembl_id)
+        # since it will query from cellbase it may fail, its best
+        # to raise an exception to catch it
+        try:
+            data = gc.get_info(ensembl_id)
+        except:
+            print("Unable to get gene info from cellbase")
+
         # some ensembl gene id not present in cellbase so skip these
         if not data['responses'][0]['results']:
             print(f"{ensembl_id} does not exist in cellbase5")
