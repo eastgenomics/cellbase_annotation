@@ -94,7 +94,10 @@ def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
         # append the gene_dict to the list of all HGNC ids
         all_genes.append(gene_dict)
 
-    return all_genes, HGNC_missing_ensemblID, ensemblID_not_in_cellbase, ensemblID_has_no_maneselect_refseq
+    return (all_genes,
+            HGNC_missing_ensemblID,
+            ensemblID_not_in_cellbase,
+            ensemblID_has_no_maneselect_refseq)
 
 
 
