@@ -26,8 +26,16 @@ def parse_args():
 
     return args
 
-def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID, ensemblID_not_in_cellbase, ensemblID_has_no_maneselect_refseq, all_genes):
-    """
+
+def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
+                    ensemblID_not_in_cellbase,
+                    ensemblID_has_no_maneselect_refseq, all_genes):
+    """This function queries cellbase for a given gene from the HGNC
+    table. As there is not get HGNC ID function for cellbase, the
+    ensembl gene id will be queried instead. The output is the equivalent
+    mane refseq transcript for the gene and three lists for HGNC id with
+    no ensembl ID, ensembl gene ID not in cellbase and ensembl gene ID
+    not assigned to a mane refseq transcript.
     Inputs:
         gc: cellbase gene client that is queried with a ensembl gene id
         HGNC_df: dataframe containing HGNC id and ensembl gene id column
@@ -39,7 +47,7 @@ def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID, ensemblID_not_in_cellbas
                                         that dont have maneselect_refseq
         all_genes: empty list that will hold HGNC id and
                     their maneselect refseq transcript
-    
+
     Returns:
         all_genes: list holding dictionaries of HGNC id and
                     their maneselect refseq transcript
@@ -70,7 +78,7 @@ def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID, ensemblID_not_in_cellbas
             ensemblID_not_in_cellbase.append(ensembl_id)
         # how many transcripts are there?
         txs_num = len(data['responses'][0]['results'][000]['transcripts'])
-        # for loop the ensembl transcripts to find what the refseq mane 
+        # for loop the ensembl transcripts to find what the refseq mane
         # transcripts are for the ensembl gene
         for transcript in range(txs_num):
             dicts = list(data['responses'][0]['results'][0]['transcripts'][transcript]['xrefs'])
@@ -84,7 +92,7 @@ def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID, ensemblID_not_in_cellbas
                 # refseq mane id is selected and added to the dict
                 gene_dict['MANE_RefSeqID'] = mane_dict[0]['id']
         # append the gene_dict to the list of all HGNC ids
-        all_genes.append(gene_dict) 
+        all_genes.append(gene_dict)
 
     return all_genes, HGNC_missing_ensemblID, ensemblID_not_in_cellbase, ensemblID_has_no_maneselect_refseq
 
@@ -95,8 +103,8 @@ def main():
     Main function to set up cellbase version 5, put the HGNC dataframe
     through the query_cellbase function and save all outuputs.
     """
-    # Query cellbase5 database 
-    custom_config = {'rest': {'hosts': [host_address]}, 
+    # Query cellbase5 database
+    custom_config = {'rest': {'hosts': [host_address]},
                     'version': 'v5', 'species': 'hsapiens'}
     customconfigclient = ConfigClient(custom_config)
     cbc = CellBaseClient(customconfigclient)
@@ -112,18 +120,18 @@ def main():
     HGNC_missing_ensemblID = []
     ensemblID_not_in_cellbase = []
     ensemblID_has_no_maneselect_refseq = []
-    
+
     # input the lists and get out the filled out lists
     all_genes, HGNC_missing_ensemblID, ensemblID_not_in_cellbase, ensemblID_has_no_maneselect_refseq = query_cellbase(
-        gc, HGNC_df, HGNC_missing_ensemblID, ensemblID_not_in_cellbase, 
+        gc, HGNC_df, HGNC_missing_ensemblID, ensemblID_not_in_cellbase,
         ensemblID_has_no_maneselect_refseq, all_genes)
 
-    # Save all hgnc ids and relevent refseq mane transcripts to dataframe 
+    # Save all hgnc ids and relevent refseq mane transcripts to dataframe
     df = pd.DataFrame.from_dict(all_genes)
     # some of df contains genes with no manerefseq ID, they have NaNs so remove it
     df_noNaN = df[pd.notnull(df['MANE_RefSeqID'])]
     # rest index to allow merging of columns later
-    df_noNaN = df_noNaN.reset_index(drop=True) 
+    df_noNaN = df_noNaN.reset_index(drop=True)
 
     #Add two lists for canonical and clinical
     df_noNaN['clinical_list'] = 'clinical_transcript'
