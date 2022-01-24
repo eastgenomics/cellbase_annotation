@@ -191,7 +191,8 @@ def main():
         'ensemblID_not_in_cellbase': ensemblID_not_in_cellbase
         })
     ensemblID_has_no_maneselect_refseq = pd.DataFrame({
-        'ensembl_gene_has_no_maneselect_refseq': ensemblID_has_no_maneselect_refseq
+        'ensembl_gene_has_no_maneselect_refseq':
+        list(set(ensemblID_has_no_maneselect_refseq))
         })
     # merge dataframe and column
     missinginfo_df = pd.concat(
