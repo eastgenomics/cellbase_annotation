@@ -27,8 +27,8 @@ def parse_args():
 
 
 def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
-                  ensemblID_not_in_cellbase,
-                  ensemblID_has_no_maneselect_refseq, all_genes):
+                ensemblID_not_in_cellbase,
+                ensemblID_has_no_maneselect_refseq, all_genes):
     """This function queries cellbase for a given gene from the HGNC
     table. As there is not get HGNC ID function for cellbase, the
     ensembl gene id will be queried instead. The output is the equivalent
