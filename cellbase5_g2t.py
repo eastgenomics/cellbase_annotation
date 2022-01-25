@@ -124,11 +124,7 @@ def main():
     sys.stdout = open(today_datetime + "_output_log.txt", "w")
 
     # Query cellbase5 database
-    custom_config = {'rest': {'hosts': [
-                                'https://ws.zettagenomics.com/cellbase'
-                                ]},
-                            'version': 'v5', 'species': 'hsapiens'}
-    customconfigclient = ConfigClient(custom_config)
+    customconfigclient = ConfigClient('config.json')
     cbc = CellBaseClient(customconfigclient)
     cbc.show_configuration()['version']
     gc = cbc.get_gene_client()  # select gene clients
