@@ -3,6 +3,7 @@ import datetime
 import pandas as pd
 from pycellbase.cbconfig import ConfigClient
 from pycellbase.cbclient import CellBaseClient
+import requests
 import sys
 import time
 
@@ -76,10 +77,12 @@ def query_cellbase(gc, HGNC_df, HGNC_missing_ensemblID,
         # get all info and select transcript info
         # since it will query from cellbase it may fail, its best
         # to raise an exception to catch it
+        # if error arises -> print another error messages
         try:
             data = gc.get_info(ensembl_id)
         except:
-            print(f"Unable to get {ensembl_id} info from cellbase client")
+            print("Killed - Client lost connection with Cellbase")
+
 
         # some ensembl gene id not present in cellbase so skip these
         if not data['responses'][0]['results']:
@@ -124,15 +127,22 @@ def main():
     sys.stdout = open(today_datetime + "_output_log.txt", "w")
 
     # Query cellbase5 database
-    customconfigclient = ConfigClient('config.json')
-    cbc = CellBaseClient(customconfigclient)
-    cbc.show_configuration()['version']
-    gc = cbc.get_gene_client()  # select gene clients
+    # This needs connection, if the server, client or connection
+    # drops this will be picked up as a print statement and
+    # the script will killed/failed
+
+    try:
+        customconfigclient = ConfigClient('config.json')
+        cbc = CellBaseClient(customconfigclient)
+        cbc.show_configuration()
+        gc = cbc.get_gene_client()  # select gene clients
+    except:
+        print("Killed - Client cannot set up connection with Cellbase.")
 
     # read in the input file hgnc tsv from the cmd line
     args = parse_args()
     print(
-        "================      Input files     ================\n",
+        "Input files".center(40, '-'),'\n'
         f"HGNC table input file => {args.file}"
         )
     HGNC_df = pd.read_csv(args.file, sep='\t')
@@ -162,7 +172,7 @@ def main():
     df_noNaN['canonical_list'] = 'canonical'
 
     # save outputs
-    print("================      Output files    ================")
+    print("Output files".center(40, '-'))
 
     df_noNaN_outputname = today_datetime + '_g2t_b38.tsv'
     df_outputname = today_datetime + '_g2t_b38_all.tsv'
@@ -172,11 +182,11 @@ def main():
     print(
         "Table with HGNC IDs with mane_select refseq transcript ",
         f"=> {df_noNaN_outputname}"
-            )
+        )
     print(
         "Table with all HGNC IDs with and without mane_select ",
         f"refseq transcript => {df_outputname}"
-            )
+        )
 
     # save list that wont be in the final file
     # change into dataframe columns
